@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, MinusIcon, PlusIcon } from "lucide-react";
+import { Loader2, MinusIcon, PlusIcon, ShoppingBagIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -67,46 +67,52 @@ const ProductActions = ({ productVariantId }: ProductActionsProps) => {
   const isPending = addProductToCartMutation.isPending;
 
   return (
-    <>
-      <div className="px-5">
-        <div className="space-y-4">
-          <h3 className="font-medium">Quantidade</h3>
-          <div className="flex w-[100px] items-center justify-between rounded-lg border">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleDecrement}
-              disabled={quantity <= MIN_QUANTITY}
-              aria-label="Diminuir quantidade"
-            >
-              <MinusIcon />
-            </Button>
-            <p>{quantity}</p>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleIncrement}
-              disabled={quantity >= MAX_QUANTITY}
-              aria-label="Aumentar quantidade"
-            >
-              <PlusIcon />
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <p className="text-sm font-bold">Quantidade</p>
+        <div className="flex w-32 items-center justify-between rounded-full border">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full"
+            onClick={handleDecrement}
+            disabled={quantity <= MIN_QUANTITY}
+            aria-label="Diminuir quantidade"
+          >
+            <MinusIcon />
+          </Button>
+          <p className="font-semibold tabular-nums" aria-live="polite">
+            {quantity}
+          </p>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full"
+            onClick={handleIncrement}
+            disabled={quantity >= MAX_QUANTITY}
+            aria-label="Aumentar quantidade"
+          >
+            <PlusIcon />
+          </Button>
         </div>
       </div>
-      <div className="flex flex-col space-y-4 px-5">
+      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/85 fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:flex-col md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <Button
-          className="rounded-full"
+          className="h-12 flex-1 rounded-full text-sm font-bold md:flex-none"
           size="lg"
           variant="outline"
           disabled={isPending}
           onClick={handleAddToCart}
         >
-          {pendingAction === "add" && <Loader2 className="animate-spin" />}
+          {pendingAction === "add" ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <ShoppingBagIcon />
+          )}
           Adicionar à sacola
         </Button>
         <Button
-          className="rounded-full"
+          className="h-12 flex-1 rounded-full text-sm font-bold md:flex-none"
           size="lg"
           disabled={isPending}
           onClick={handleBuyNow}
@@ -115,7 +121,7 @@ const ProductActions = ({ productVariantId }: ProductActionsProps) => {
           Comprar agora
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 

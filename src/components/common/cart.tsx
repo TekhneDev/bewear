@@ -23,11 +23,27 @@ export const Cart = () => {
   const { data: session } = authClient.useSession();
   const { data: cart } = useCart({ enabled: Boolean(session?.user) });
   const hasItems = Boolean(cart?.items.length);
+  const itemsCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="Abrir sacola">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={
+            itemsCount > 0
+              ? `Abrir sacola, ${itemsCount} ${itemsCount === 1 ? "item" : "itens"}`
+              : "Abrir sacola"
+          }
+        >
           <ShoppingBasketIcon />
+          {itemsCount > 0 && (
+            <span className="bg-primary text-primary-foreground animate-in zoom-in absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-bold">
+              {itemsCount > 99 ? "99+" : itemsCount}
+            </span>
+          )}
         </Button>
       </SheetTrigger>
       <SheetContent>

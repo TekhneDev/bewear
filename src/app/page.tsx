@@ -1,56 +1,58 @@
-import Image from "next/image";
-
 import CategorySelector from "@/components/common/category-selector";
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
 import ProductList from "@/components/common/product-list";
+import { getCategoriesWithCover } from "@/data/categories";
 import { getBestSellingProducts, getNewestProducts } from "@/data/products";
-import { db } from "@/db";
+
+import HeroBanners from "./components/hero-banners";
+import StoreBenefits from "./components/store-benefits";
 
 export const dynamic = "force-dynamic";
 
 const Home = async () => {
-  const [products, newlyCreatedProducts, categories] = await Promise.all([
+  const [bestSellingProducts, newestProducts, categories] = await Promise.all([
     getBestSellingProducts(),
     getNewestProducts(),
-    db.query.categoryTable.findMany({}),
+    getCategoriesWithCover(),
   ]);
+
+  const getCategoryHref = (keyword: string) => {
+    const category = categories.find((item) =>
+      item.name.toLowerCase().includes(keyword),
+    );
+    return category ? `/category/${category.slug}` : "#novidades";
+  };
+
+  const banners = [
+    {
+      src: "/banner-01.png",
+      alt: "Leve uma vida com estilo. Comprar jaquetas e moletons",
+      href: getCategoryHref("jaquetas"),
+    },
+    {
+      src: "/banner-02.png",
+      alt: "Seja autêntico. Comprar novidades",
+      href: "#novidades",
+    },
+  ];
 
   return (
     <>
       <Header />
-      <div className="space-y-6">
-        <div className="px-5">
-          <Image
-            src="/banner-01.png"
-            alt="Leve uma vida com estilo"
-            height={0}
-            width={0}
-            sizes="100vw"
-            className="h-auto w-full"
-          />
-        </div>
-
-        <ProductList products={products} title="Mais vendidos" />
-
-        <div className="px-5">
-          <CategorySelector categories={categories} />
-        </div>
-
-        <div className="px-5">
-          <Image
-            src="/banner-02.png"
-            alt="Leve uma vida com estilo"
-            height={0}
-            width={0}
-            sizes="100vw"
-            className="h-auto w-full"
-          />
-        </div>
-
-        <ProductList products={newlyCreatedProducts} title="Novos produtos" />
-        <Footer />
-      </div>
+      <main className="space-y-12 pt-5 md:space-y-16 md:pt-8">
+        <HeroBanners banners={banners} />
+        <ProductList title="Mais vendidos" products={bestSellingProducts} />
+        <CategorySelector categories={categories} />
+        <ProductList
+          id="novidades"
+          title="Novidades"
+          badge="Novo"
+          products={newestProducts}
+        />
+        <StoreBenefits />
+      </main>
+      <Footer />
     </>
   );
 };

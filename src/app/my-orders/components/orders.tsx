@@ -32,13 +32,20 @@ interface OrdersProps {
 }
 
 const Orders = ({ orders }: OrdersProps) => {
+  if (orders.length === 0) {
+    return (
+      <p className="text-muted-foreground py-10 text-center text-sm">
+        Você ainda não fez nenhum pedido.
+      </p>
+    );
+  }
   return (
     <div className="space-y-5">
       {orders.map((order) => (
         <Card key={order.id}>
           <CardContent>
-            <Accordion type="single" collapsible key={order.id}>
-              <AccordionItem value="item-1">
+            <Accordion type="single" collapsible>
+              <AccordionItem value={order.id}>
                 <AccordionTrigger>
                   <div className="flex flex-col gap-1">
                     {order.status === "paid" && <Badge>Pago</Badge>}

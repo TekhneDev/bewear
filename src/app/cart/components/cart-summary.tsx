@@ -1,5 +1,4 @@
 import Image from "next/image";
-import React from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -41,7 +40,7 @@ const CartSummary = ({
         </div>
         <div className="flex justify-between">
           <p className="text-sm">Total</p>
-          <p className="text-muted-foreground text-sm font-medium">
+          <p className="text-sm font-semibold">
             {formatCentsToBRL(totalInCents)}
           </p>
         </div>
@@ -63,13 +62,13 @@ const CartSummary = ({
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-semibold">{product.name}</p>
                 <p className="text-muted-foreground text-xs font-medium">
-                  {product.variantName}
+                  {product.variantName} x {product.quantity}
                 </p>
               </div>
             </div>
             <div className="flex flex-col items-end justify-center gap-2">
               <p className="text-sm font-bold">
-                {formatCentsToBRL(product.priceInCents)}
+                {formatCentsToBRL(product.priceInCents * product.quantity)}
               </p>
             </div>
           </div>

@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -93,7 +94,7 @@ export const productTable = pgTable("product", {
   id: uuid().primaryKey().defaultRandom(),
   categoryId: uuid("category_id")
     .notNull()
-    .references(() => categoryTable.id, { onDelete: "set null" }),
+    .references(() => categoryTable.id, { onDelete: "restrict" }),
   name: text().notNull(),
   slug: text().notNull().unique(),
   description: text().notNull(),
@@ -172,6 +173,7 @@ export const cartTable = pgTable("cart", {
   id: uuid().primaryKey().defaultRandom(),
   userId: text("user_id")
     .notNull()
+    .unique()
     .references(() => userTable.id, { onDelete: "cascade" }),
   shippingAddressId: uuid("shipping_address_id").references(
     () => shippingAddressTable.id,
@@ -192,17 +194,21 @@ export const cartRelations = relations(cartTable, ({ one, many }) => ({
   items: many(cartItemTable),
 }));
 
-export const cartItemTable = pgTable("cart_item", {
-  id: uuid().primaryKey().defaultRandom(),
-  cartId: uuid("cart_id")
-    .notNull()
-    .references(() => cartTable.id, { onDelete: "cascade" }),
-  productVariantId: uuid("product_variant_id")
-    .notNull()
-    .references(() => productVariantTable.id, { onDelete: "cascade" }),
-  quantity: integer("quantity").notNull().default(1),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const cartItemTable = pgTable(
+  "cart_item",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    cartId: uuid("cart_id")
+      .notNull()
+      .references(() => cartTable.id, { onDelete: "cascade" }),
+    productVariantId: uuid("product_variant_id")
+      .notNull()
+      .references(() => productVariantTable.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull().default(1),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.cartId, table.productVariantId)],
+);
 
 export const cartItemRelations = relations(cartItemTable, ({ one }) => ({
   cart: one(cartTable, {
@@ -226,9 +232,10 @@ export const orderTable = pgTable("order", {
   userId: text("user_id")
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
-  shippingAddressId: uuid("shipping_address_id")
-    .notNull()
-    .references(() => shippingAddressTable.id, { onDelete: "set null" }),
+  shippingAddressId: uuid("shipping_address_id").references(
+    () => shippingAddressTable.id,
+    { onDelete: "set null" },
+  ),
   recipientName: text().notNull(),
   street: text().notNull(),
   number: text().notNull(),

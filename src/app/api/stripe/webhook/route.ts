@@ -1,38 +1,49 @@
-import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-import { db } from "@/db";
-import { orderTable } from "@/db/schema";
+import { markOrderAsCanceled, markOrderAsPaid } from "@/data/order";
+import { getStripe } from "@/lib/stripe";
 
 export const POST = async (request: Request) => {
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.error();
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: "Webhook secret is not set" },
+      { status: 500 },
+    );
   }
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
-    return NextResponse.error();
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
-  const text = await request.text();
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const event = stripe.webhooks.constructEvent(
-    text,
-    signature,
-    process.env.STRIPE_WEBHOOK_SECRET,
-  );
-  if (event.type === "checkout.session.completed") {
-    console.log("Checkout session completed");
-    const session = event.data.object as Stripe.Checkout.Session;
+  const stripe = getStripe();
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      await request.text(),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_succeeded"
+  ) {
+    const session = event.data.object;
     const orderId = session.metadata?.orderId;
-    if (!orderId) {
-      return NextResponse.error();
+    if (orderId && session.payment_status === "paid") {
+      await markOrderAsPaid(orderId);
     }
-    await db
-      .update(orderTable)
-      .set({
-        status: "paid",
-      })
-      .where(eq(orderTable.id, orderId));
+  }
+  if (
+    event.type === "checkout.session.expired" ||
+    event.type === "checkout.session.async_payment_failed"
+  ) {
+    const orderId = event.data.object.metadata?.orderId;
+    if (orderId) {
+      await markOrderAsCanceled(orderId);
+    }
   }
   return NextResponse.json({ received: true });
 };

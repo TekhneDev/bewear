@@ -8,7 +8,8 @@ export const formatAddress = (address: {
   state: string;
   zipCode: string;
 }) => {
-  return `${address.recipientName} • ${address.street}, ${address.number}
-    ${address.complement && `, ${address.complement}`}, ${address.neighborhood}
-    , ${address.city} - ${address.state} • CEP: ${address.zipCode}`;
+  const streetLine = [address.street, address.number, address.complement]
+    .filter(Boolean)
+    .join(", ");
+  return `${address.recipientName} • ${streetLine}, ${address.neighborhood}, ${address.city} - ${address.state} • CEP: ${address.zipCode}`;
 };

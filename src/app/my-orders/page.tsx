@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -14,10 +14,11 @@ const MyOrdersPage = async () => {
     headers: await headers(),
   });
   if (!session?.user.id) {
-    redirect("/login");
+    redirect("/authentication");
   }
   const orders = await db.query.orderTable.findMany({
-    where: eq(orderTable.userId, session?.user.id),
+    where: eq(orderTable.userId, session.user.id),
+    orderBy: [desc(orderTable.createdAt)],
     with: {
       items: {
         with: {
@@ -34,7 +35,8 @@ const MyOrdersPage = async () => {
   return (
     <>
       <Header />
-      <div className="px-5">
+      <div className="space-y-6 px-5">
+        <h2 className="text-xl font-semibold">Meus pedidos</h2>
         <Orders
           orders={orders.map((order) => ({
             id: order.id,
@@ -46,7 +48,7 @@ const MyOrdersPage = async () => {
               imageUrl: item.productVariant.imageUrl,
               productName: item.productVariant.product.name,
               productVariantName: item.productVariant.name,
-              priceInCents: item.productVariant.priceInCents,
+              priceInCents: item.priceInCents,
               quantity: item.quantity,
             })),
           }))}

@@ -5,7 +5,9 @@ import ProductList from "@/components/common/product-list";
 import { getCategoriesWithCover } from "@/data/categories";
 import { getBestSellingProducts, getNewestProducts } from "@/data/products";
 
-import HeroBanners from "./components/hero-banners";
+import EditorialPair from "./components/editorial-pair";
+import HeroCarousel from "./components/hero-carousel";
+import QuickLinks from "./components/quick-links";
 import StoreBenefits from "./components/store-benefits";
 
 export const dynamic = "force-dynamic";
@@ -17,39 +19,76 @@ const Home = async () => {
     getCategoriesWithCover(),
   ]);
 
-  const getCategoryHref = (keyword: string) => {
-    const category = categories.find((item) =>
-      item.name.toLowerCase().includes(keyword),
+  const findCategory = (keyword: string) =>
+    categories.find((category) =>
+      category.name.toLowerCase().includes(keyword),
     );
-    return category ? `/category/${category.slug}` : "#novidades";
+  const getCategoryHref = (keyword: string) => {
+    const category = findCategory(keyword);
+    return category ? `/category/${category.slug}` : "/#novidades";
   };
 
-  const banners = [
+  const heroSlides = [
     {
-      src: "/banner-01.png",
-      alt: "Leve uma vida com estilo. Comprar jaquetas e moletons",
-      href: getCategoryHref("jaquetas"),
+      imageSrc: "/banner-01.png",
+      imageAlt: "Modelo vestindo blusa fleece BEWEAR",
+      eyebrow: "Coleção de inverno",
+      title: "Feito para o frio",
+      links: [
+        { label: "Comprar jaquetas", href: getCategoryHref("jaquetas") },
+        { label: "Ver novidades", href: "/#novidades" },
+      ],
     },
     {
-      src: "/banner-02.png",
-      alt: "Seja autêntico. Comprar novidades",
-      href: "#novidades",
+      imageSrc: "/banner-02.png",
+      imageAlt: "Modelo vestindo jaqueta esportiva BEWEAR",
+      eyebrow: "Novidades da semana",
+      title: "Estilo que é só seu",
+      links: [
+        { label: "Comprar camisetas", href: getCategoryHref("camisetas") },
+        { label: "Mais vendidos", href: "/#mais-vendidos" },
+      ],
     },
   ];
+
+  const editorialItems = ["jaquetas", "camisetas"]
+    .map((keyword) => findCategory(keyword))
+    .filter((category) => category !== undefined)
+    .map((category) => ({
+      title: category.name,
+      imageUrl: category.coverImageUrl,
+      href: `/category/${category.slug}`,
+      linkLabel: "Comprar agora",
+    }));
 
   return (
     <>
       <Header />
-      <main className="space-y-12 pt-5 md:space-y-16 md:pt-8">
-        <HeroBanners banners={banners} />
-        <ProductList title="Mais vendidos" products={bestSellingProducts} />
-        <CategorySelector categories={categories} />
+      <main>
+        <HeroCarousel slides={heroSlides} />
+        <QuickLinks
+          links={categories.map((category) => ({
+            label: category.name,
+            href: `/category/${category.slug}`,
+          }))}
+        />
+        <ProductList
+          id="mais-vendidos"
+          title="Mais vendidos"
+          products={bestSellingProducts}
+        />
+        {editorialItems.length === 2 && (
+          <EditorialPair items={editorialItems} />
+        )}
         <ProductList
           id="novidades"
           title="Novidades"
           badge="Novo"
           products={newestProducts}
         />
+        <div className="py-12 md:py-16">
+          <CategorySelector categories={categories} />
+        </div>
         <StoreBenefits />
       </main>
       <Footer />

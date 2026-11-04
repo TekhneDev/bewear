@@ -20,8 +20,8 @@ const BENEFITS = [
 
 const StoreBenefits = () => {
   return (
-    <section className="mx-auto w-full max-w-7xl px-5">
-      <ul className="bg-muted grid gap-6 rounded-3xl p-6 sm:grid-cols-3 md:p-8">
+    <section className="bg-muted">
+      <ul className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:grid-cols-3 md:py-10">
         {BENEFITS.map(({ icon: Icon, title, description }) => (
           <li key={title} className="flex items-start gap-4">
             <span className="bg-primary text-primary-foreground flex size-11 shrink-0 items-center justify-center rounded-full">

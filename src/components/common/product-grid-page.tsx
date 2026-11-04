@@ -44,7 +44,7 @@ const ProductGridPage = ({
 
       <div className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight uppercase md:text-4xl">
+          <h1 className="font-display text-4xl uppercase md:text-6xl">
             {title}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -63,9 +63,13 @@ const ProductGridPage = ({
           {emptyMessage}
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
+        <div className="bg-border -mx-5 grid grid-cols-2 gap-px border-y md:mx-0 md:grid-cols-3 md:border-x lg:grid-cols-4">
           {products.map((product) => (
-            <ProductItem key={product.id} product={product} />
+            <ProductItem
+              key={product.id}
+              product={product}
+              className="bg-background"
+            />
           ))}
         </div>
       )}

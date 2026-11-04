@@ -14,7 +14,7 @@ interface CategorySelectorProps {
 const CategorySelector = ({ categories }: CategorySelectorProps) => {
   return (
     <section className="mx-auto w-full max-w-7xl space-y-5 px-5">
-      <h2 className="text-xl font-extrabold tracking-tight uppercase md:text-2xl">
+      <h2 className="font-display text-3xl uppercase md:text-4xl">
         Compre por categoria
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
@@ -22,7 +22,7 @@ const CategorySelector = ({ categories }: CategorySelectorProps) => {
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
-            className="group bg-muted relative aspect-[4/5] overflow-hidden rounded-2xl"
+            className="group relative aspect-[4/5] overflow-hidden bg-[#f3f1ee]"
           >
             {category.coverImageUrl && (
               <Image
@@ -30,7 +30,7 @@ const CategorySelector = ({ categories }: CategorySelectorProps) => {
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw"
-                className="object-cover transition duration-500 group-hover:scale-110"
+                className="object-cover mix-blend-multiply transition duration-500 group-hover:scale-110"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />

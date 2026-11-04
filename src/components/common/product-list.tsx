@@ -1,16 +1,11 @@
 "use client";
 
-import {
-  ArrowRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { productTable, productVariantTable } from "@/db/schema";
 
-import { Button } from "../ui/button";
 import ProductItem from "./product-item";
 
 interface ProductListProps {
@@ -67,59 +62,50 @@ const ProductList = ({
   }
 
   return (
-    <section
-      id={id}
-      className="mx-auto w-full max-w-7xl scroll-mt-24 space-y-5"
-    >
-      <div className="flex items-end justify-between gap-4 px-5">
-        <h2 className="text-xl font-extrabold tracking-tight uppercase md:text-2xl">
-          {title}
-        </h2>
-        <div className="flex items-center gap-2">
+    <section id={id} className="bg-foreground scroll-mt-16">
+      <div className="text-background flex items-center justify-between gap-4 px-4 py-4 md:px-5">
+        <h2 className="font-display text-3xl uppercase md:text-4xl">{title}</h2>
+        <div className="flex items-center gap-1">
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="hover:text-primary flex items-center gap-1 text-sm font-semibold underline-offset-4 hover:underline"
+              className="mr-2 text-sm font-bold underline decoration-2 underline-offset-4"
             >
               Ver tudo
-              <ArrowRightIcon className="size-4" />
             </Link>
           )}
-          <div className="hidden items-center gap-2 md:flex">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full"
-              onClick={() => scrollByPage(-1)}
-              disabled={!canScrollPrevious}
-              aria-label={`Ver produtos anteriores de ${title}`}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full"
-              onClick={() => scrollByPage(1)}
-              disabled={!canScrollNext}
-              aria-label={`Ver mais produtos de ${title}`}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => scrollByPage(-1)}
+            disabled={!canScrollPrevious}
+            aria-label={`Ver produtos anteriores de ${title}`}
+            className="hover:bg-background/10 flex size-10 items-center justify-center rounded-full transition disabled:opacity-0"
+          >
+            <ChevronLeftIcon className="size-6" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByPage(1)}
+            disabled={!canScrollNext}
+            aria-label={`Ver mais produtos de ${title}`}
+            className="hover:bg-background/10 flex size-10 items-center justify-center rounded-full transition disabled:opacity-0"
+          >
+            <ChevronRightIcon className="size-6" />
+          </button>
         </div>
       </div>
       <div
         ref={scrollerRef}
         onScroll={updateScrollState}
-        className="flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {products.map((product) => (
           <ProductItem
             key={product.id}
             product={product}
             badge={badge}
-            className="w-[44%] shrink-0 snap-start sm:w-[30%] lg:w-[23%] xl:w-[18.5%]"
+            tone="dark"
+            className="border-foreground w-[72%] shrink-0 snap-start border-r-4 sm:w-[45%] lg:w-[30%] xl:w-[25%]"
           />
         ))}
       </div>

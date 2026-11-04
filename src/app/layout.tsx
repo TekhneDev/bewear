@@ -1,13 +1,19 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Anton, Geist, Geist_Mono } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import ReactQueryProvider from "@/providers/react-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const anton = Anton({
+  variable: "--font-anton",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -29,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} antialiased`}
       >
         <ReactQueryProvider>{children}</ReactQueryProvider>
         <Toaster position="top-center" />

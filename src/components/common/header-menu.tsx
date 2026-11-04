@@ -59,19 +59,10 @@ export const HeaderMenu = ({ categories }: HeaderMenuProps) => {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Abrir menu">
-          {session?.user ? (
-            <Avatar className="size-7">
-              <AvatarImage src={session.user.image ?? undefined} />
-              <AvatarFallback className="text-[10px] font-semibold">
-                {getInitials(session.user.name)}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <MenuIcon />
-          )}
+          <MenuIcon />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full gap-0 sm:max-w-sm">
+      <SheetContent side="left" className="w-full gap-0 sm:max-w-sm">
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>

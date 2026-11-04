@@ -5,15 +5,23 @@ import { productTable, productVariantTable } from "@/db/schema";
 import { formatCentsToBRL } from "@/helpers/money";
 import { cn } from "@/lib/utils";
 
+import QuickAddButton from "./quick-add-button";
+
 interface ProductItemProps {
   product: typeof productTable.$inferSelect & {
     variants: (typeof productVariantTable.$inferSelect)[];
   };
   badge?: string;
+  tone?: "light" | "dark";
   className?: string;
 }
 
-const ProductItem = ({ product, badge, className }: ProductItemProps) => {
+const ProductItem = ({
+  product,
+  badge,
+  tone = "light",
+  className,
+}: ProductItemProps) => {
   const [firstVariant, secondVariant] = product.variants;
   if (!firstVariant) {
     return null;
@@ -22,61 +30,80 @@ const ProductItem = ({ product, badge, className }: ProductItemProps) => {
   const lowestPriceInCents = Math.min(...prices);
   const hasPriceRange = new Set(prices).size > 1;
   const colorsCount = product.variants.length;
+  const isDark = tone === "dark";
 
   return (
-    <Link
-      href={`/product-variant/${firstVariant.slug}`}
-      className={cn("group flex flex-col gap-3", className)}
-    >
-      <div className="bg-muted relative aspect-square overflow-hidden rounded-2xl">
-        <Image
-          src={firstVariant.imageUrl}
-          alt={`${product.name} ${firstVariant.color}`}
-          fill
-          sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 50vw"
-          className={cn(
-            "object-cover transition duration-500 group-hover:scale-105",
-            secondVariant && "group-hover:opacity-0",
-          )}
-        />
-        {secondVariant && (
+    <div className={cn("group relative flex flex-col", className)}>
+      <Link
+        href={`/product-variant/${firstVariant.slug}`}
+        className="flex flex-1 flex-col"
+      >
+        <div className="relative aspect-square overflow-hidden bg-[#f3f1ee]">
           <Image
-            src={secondVariant.imageUrl}
-            alt=""
-            aria-hidden
+            src={firstVariant.imageUrl}
+            alt={`${product.name} ${firstVariant.color}`}
             fill
-            sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 50vw"
-            className="object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+            className={cn(
+              "object-cover mix-blend-multiply transition duration-500 group-hover:scale-105",
+              secondVariant && "group-hover:opacity-0",
+            )}
           />
-        )}
-        {badge && (
-          <span className="bg-background text-foreground absolute top-3 left-3 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm">
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="flex min-w-0 flex-col gap-1">
-        {colorsCount > 1 && (
-          <p className="text-muted-foreground text-xs font-medium">
-            {colorsCount} cores
-          </p>
-        )}
-        <p className="group-hover:text-primary truncate text-sm font-semibold transition-colors">
-          {product.name}
-        </p>
-        <p className="text-muted-foreground line-clamp-1 text-xs">
-          {product.description}
-        </p>
-        <p className="text-sm font-bold">
-          {hasPriceRange && (
-            <span className="text-muted-foreground mr-1 text-xs font-medium">
-              a partir de
+          {secondVariant && (
+            <Image
+              src={secondVariant.imageUrl}
+              alt=""
+              aria-hidden
+              fill
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+              className="object-cover opacity-0 mix-blend-multiply transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+            />
+          )}
+          {badge && (
+            <span className="bg-foreground text-background absolute top-2 left-2 px-2 py-1 text-[10px] font-bold tracking-wider uppercase md:top-3 md:left-3">
+              {badge}
             </span>
           )}
-          {formatCentsToBRL(lowestPriceInCents)}
-        </p>
-      </div>
-    </Link>
+        </div>
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col gap-0.5 px-3 pt-3 pb-4",
+            isDark ? "text-background" : "text-foreground",
+          )}
+        >
+          <p className="truncate text-sm font-bold group-hover:underline">
+            {product.name}
+          </p>
+          <p className="text-sm">
+            {hasPriceRange && (
+              <span
+                className={cn(
+                  "mr-1 text-xs",
+                  isDark ? "text-background/60" : "text-muted-foreground",
+                )}
+              >
+                a partir de
+              </span>
+            )}
+            {formatCentsToBRL(lowestPriceInCents)}
+          </p>
+          {colorsCount > 1 && (
+            <p
+              className={cn(
+                "text-xs",
+                isDark ? "text-background/60" : "text-muted-foreground",
+              )}
+            >
+              {colorsCount} cores
+            </p>
+          )}
+        </div>
+      </Link>
+      <QuickAddButton
+        productVariantId={firstVariant.id}
+        productLabel={`${product.name} ${firstVariant.color}`}
+      />
+    </div>
   );
 };
 

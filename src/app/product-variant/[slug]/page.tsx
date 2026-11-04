@@ -75,7 +75,7 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
       <Header />
       <main className="pb-28 md:pb-0">
         <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:gap-10 md:px-5 md:pt-8 lg:gap-16">
-          <div className="bg-muted relative aspect-square overflow-hidden md:sticky md:top-24 md:self-start md:rounded-3xl">
+          <div className="bg-muted relative aspect-square overflow-hidden md:sticky md:top-20 md:self-start">
             <Image
               src={productVariant.imageUrl}
               alt={`${product.name} ${productVariant.color}`}
@@ -115,7 +115,7 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
             </nav>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-extrabold tracking-tight uppercase md:text-3xl">
+              <h1 className="font-display text-4xl uppercase md:text-5xl">
                 {product.name}
               </h1>
               <p className="text-2xl font-bold">
@@ -167,7 +167,7 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
           </div>
         </div>
 
-        <div className="mt-12 md:mt-20">
+        <div className="mt-12 md:mt-16">
           <ProductList title="Talvez você goste" products={likelyProducts} />
         </div>
       </main>

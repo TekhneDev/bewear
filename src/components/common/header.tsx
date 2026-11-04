@@ -5,9 +5,9 @@ import { Suspense } from "react";
 
 import { getCategories } from "@/data/categories";
 
+import AccountButton from "./account-button";
 import AnnouncementBar from "./announcement-bar";
 import { Cart } from "./cart";
-import CategoryNav from "./category-nav";
 import { HeaderMenu } from "./header-menu";
 import { SearchBar } from "./search-bar";
 import StickyHeader from "./sticky-header";
@@ -19,12 +19,11 @@ export const Header = async () => {
     <>
       <AnnouncementBar />
       <StickyHeader>
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-5 lg:h-20">
-          <Link
-            href="/"
-            className="shrink-0"
-            aria-label="BEWEAR, página inicial"
-          >
+        <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center px-2 md:h-16 md:px-4">
+          <div className="flex items-center">
+            <HeaderMenu categories={categories} />
+          </div>
+          <Link href="/" aria-label="BEWEAR, página inicial">
             <Image
               src="/logo.svg"
               alt="BEWEAR"
@@ -33,14 +32,11 @@ export const Header = async () => {
               priority
             />
           </Link>
-
-          <CategoryNav categories={categories} />
-
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-0.5">
+            <AccountButton />
             <Suspense>
               <SearchBar />
             </Suspense>
-            <HeaderMenu categories={categories} />
             <Cart />
           </div>
         </div>

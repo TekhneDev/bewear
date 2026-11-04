@@ -1,26 +1,70 @@
 "use client";
 
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { Loader2, MinusIcon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useAddProductToCart } from "@/hooks/mutations/use-add-product-to-cart";
+import { authClient } from "@/lib/auth-client";
 
-import AddToCartButton from "./add-to-cart-button";
+const MIN_QUANTITY = 1;
+const MAX_QUANTITY = 99;
 
 interface ProductActionsProps {
   productVariantId: string;
 }
 
 const ProductActions = ({ productVariantId }: ProductActionsProps) => {
-  const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const [quantity, setQuantity] = useState(MIN_QUANTITY);
+  const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(
+    null,
+  );
+  const addProductToCartMutation = useAddProductToCart(productVariantId);
 
   const handleDecrement = () => {
-    setQuantity((prev) => (prev > 1 ? prev - 1 : prev));
+    setQuantity((prev) => Math.max(MIN_QUANTITY, prev - 1));
   };
 
   const handleIncrement = () => {
-    setQuantity((prev) => prev + 1);
+    setQuantity((prev) => Math.min(MAX_QUANTITY, prev + 1));
   };
+
+  const addToCart = async (action: "add" | "buy") => {
+    if (!session?.user) {
+      toast.info("Faça login para adicionar produtos à sacola.");
+      router.push("/authentication");
+      return false;
+    }
+    setPendingAction(action);
+    try {
+      await addProductToCartMutation.mutateAsync(quantity);
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao adicionar produto à sacola.");
+      return false;
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (await addToCart("add")) {
+      toast.success("Produto adicionado à sacola.");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (await addToCart("buy")) {
+      router.push("/cart/identification");
+    }
+  };
+
+  const isPending = addProductToCartMutation.isPending;
 
   return (
     <>
@@ -28,22 +72,46 @@ const ProductActions = ({ productVariantId }: ProductActionsProps) => {
         <div className="space-y-4">
           <h3 className="font-medium">Quantidade</h3>
           <div className="flex w-[100px] items-center justify-between rounded-lg border">
-            <Button size="icon" variant="ghost" onClick={handleDecrement}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleDecrement}
+              disabled={quantity <= MIN_QUANTITY}
+              aria-label="Diminuir quantidade"
+            >
               <MinusIcon />
             </Button>
             <p>{quantity}</p>
-            <Button size="icon" variant="ghost" onClick={handleIncrement}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleIncrement}
+              disabled={quantity >= MAX_QUANTITY}
+              aria-label="Aumentar quantidade"
+            >
               <PlusIcon />
             </Button>
           </div>
         </div>
       </div>
       <div className="flex flex-col space-y-4 px-5">
-        <AddToCartButton
-          productVariantId={productVariantId}
-          quantity={quantity}
-        />
-        <Button className="rounded-full" size="lg">
+        <Button
+          className="rounded-full"
+          size="lg"
+          variant="outline"
+          disabled={isPending}
+          onClick={handleAddToCart}
+        >
+          {pendingAction === "add" && <Loader2 className="animate-spin" />}
+          Adicionar à sacola
+        </Button>
+        <Button
+          className="rounded-full"
+          size="lg"
+          disabled={isPending}
+          onClick={handleBuyNow}
+        >
+          {pendingAction === "buy" && <Loader2 className="animate-spin" />}
           Comprar agora
         </Button>
       </div>

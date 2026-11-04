@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatCentsToBRL } from "@/helpers/money";
 import { useCart } from "@/hooks/queries/use-cart";
+import { authClient } from "@/lib/auth-client";
 
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
@@ -19,11 +20,13 @@ import {
 import CartItem from "./cart-item";
 
 export const Cart = () => {
-  const { data: cart } = useCart();
+  const { data: session } = authClient.useSession();
+  const { data: cart } = useCart({ enabled: Boolean(session?.user) });
+  const hasItems = Boolean(cart?.items.length);
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" aria-label="Abrir sacola">
           <ShoppingBasketIcon />
         </Button>
       </SheetTrigger>
@@ -36,6 +39,11 @@ export const Cart = () => {
           <div className="flex h-full max-h-full flex-col overflow-hidden">
             <ScrollArea className="h-full">
               <div className="flex h-full flex-col gap-8">
+                {!hasItems && (
+                  <p className="text-muted-foreground py-10 text-center text-sm">
+                    Sua sacola está vazia.
+                  </p>
+                )}
                 {cart?.items.map((item) => (
                   <CartItem
                     key={item.id}
@@ -54,13 +62,13 @@ export const Cart = () => {
             </ScrollArea>
           </div>
 
-          {cart?.items && cart?.items.length > 0 && (
+          {cart && hasItems && (
             <div className="flex flex-col gap-4">
               <Separator />
 
               <div className="flex items-center justify-between text-xs font-medium">
                 <p>Subtotal</p>
-                <p>{formatCentsToBRL(cart?.totalPriceInCents ?? 0)}</p>
+                <p>{formatCentsToBRL(cart.totalPriceInCents)}</p>
               </div>
 
               <Separator />
@@ -74,7 +82,7 @@ export const Cart = () => {
 
               <div className="flex items-center justify-between text-xs font-medium">
                 <p>Total</p>
-                <p>{formatCentsToBRL(cart?.totalPriceInCents ?? 0)}</p>
+                <p>{formatCentsToBRL(cart.totalPriceInCents)}</p>
               </div>
 
               <Button className="mt-5 rounded-full" asChild>
@@ -87,5 +95,3 @@ export const Cart = () => {
     </Sheet>
   );
 };
-
-// SERVER ACTION

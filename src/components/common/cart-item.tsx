@@ -1,3 +1,5 @@
+"use client";
+
 import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -45,7 +47,10 @@ const CartItem = ({
   const handleDecreaseQuantityClick = () => {
     decreaseCartProductQuantityMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success("Quantidade do produto diminuida.");
+        toast.success("Quantidade do produto diminuída.");
+      },
+      onError: () => {
+        toast.error("Erro ao diminuir quantidade do produto.");
       },
     });
   };
@@ -54,8 +59,15 @@ const CartItem = ({
       onSuccess: () => {
         toast.success("Quantidade do produto aumentada.");
       },
+      onError: () => {
+        toast.error("Erro ao aumentar quantidade do produto.");
+      },
     });
   };
+  const isPending =
+    removeProductFromCartMutation.isPending ||
+    decreaseCartProductQuantityMutation.isPending ||
+    increaseCartProductQuantityMutation.isPending;
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -76,6 +88,8 @@ const CartItem = ({
               className="h-4 w-4"
               variant="ghost"
               onClick={handleDecreaseQuantityClick}
+              disabled={isPending}
+              aria-label="Diminuir quantidade"
             >
               <MinusIcon />
             </Button>
@@ -84,6 +98,8 @@ const CartItem = ({
               className="h-4 w-4"
               variant="ghost"
               onClick={handleIncreaseQuantityClick}
+              disabled={isPending}
+              aria-label="Aumentar quantidade"
             >
               <PlusIcon />
             </Button>
@@ -91,11 +107,17 @@ const CartItem = ({
         </div>
       </div>
       <div className="flex flex-col items-end justify-center gap-2">
-        <Button variant="outline" size="icon" onClick={handleDeleteClick}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleDeleteClick}
+          disabled={isPending}
+          aria-label="Remover produto"
+        >
           <TrashIcon />
         </Button>
         <p className="text-sm font-bold">
-          {formatCentsToBRL(productVariantPriceInCents)}
+          {formatCentsToBRL(productVariantPriceInCents * quantity)}
         </p>
       </div>
     </div>

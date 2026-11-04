@@ -276,7 +276,6 @@ const categories = [
 ];
 
 const products = [
-  // Acessórios
   {
     name: "Mochila",
     description:
@@ -317,7 +316,6 @@ const products = [
     ],
   },
 
-  // Bermuda & Shorts
   {
     name: "Shorts Active",
     description:
@@ -362,7 +360,6 @@ const products = [
     ],
   },
 
-  // Calças
   {
     name: "Calça Nike Club",
     description:
@@ -408,7 +405,6 @@ const products = [
     ],
   },
 
-  // Camisetas
   {
     name: "Camiseta ACG",
     description:
@@ -451,7 +447,6 @@ const products = [
     ],
   },
 
-  // Jaquetas & Moletons
   {
     name: "Corta Vento",
     description:
@@ -492,7 +487,6 @@ const products = [
     ],
   },
 
-  // Tênis
   {
     name: "Tênis Nike Vomero",
     description:
@@ -540,14 +534,12 @@ async function main() {
   console.log("🌱 Iniciando o seeding do banco de dados...");
 
   try {
-    // Limpar dados existentes
     console.log("🧹 Limpando dados existentes...");
     await db.delete(productVariantTable);
     await db.delete(productTable);
     await db.delete(categoryTable);
     console.log("✅ Dados limpos com sucesso!");
 
-    // Inserir categorias primeiro
     const categoryMap = new Map<string, string>();
 
     console.log("📂 Criando categorias...");
@@ -566,7 +558,6 @@ async function main() {
       categoryMap.set(categoryData.name, categoryId);
     }
 
-    // Inserir produtos
     for (const productData of products) {
       const productId = crypto.randomUUID();
       const productSlug = generateSlug(productData.name);
@@ -588,7 +579,6 @@ async function main() {
         categoryId: categoryId,
       });
 
-      // Inserir variantes do produto
       for (const variantData of productData.variants) {
         const variantId = crypto.randomUUID();
         const productKey = productData.name as keyof typeof productImages;

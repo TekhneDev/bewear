@@ -1,9 +1,12 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
+import { getOrCreateCartId } from "@/data/cart";
 import { db } from "@/db";
 import { cartTable } from "@/db/schema";
+import { calculateCartTotalInCents } from "@/helpers/cart";
 import { auth } from "@/lib/auth";
 
 export const getCart = async () => {
@@ -13,11 +16,13 @@ export const getCart = async () => {
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
+  const cartId = await getOrCreateCartId(session.user.id);
   const cart = await db.query.cartTable.findFirst({
-    where: (cart, { eq }) => eq(cart.userId, session.user.id),
+    where: eq(cartTable.id, cartId),
     with: {
       shippingAddress: true,
       items: {
+        orderBy: (item, { asc }) => [asc(item.createdAt)],
         with: {
           productVariant: {
             with: {
@@ -29,24 +34,10 @@ export const getCart = async () => {
     },
   });
   if (!cart) {
-    const [newCart] = await db
-      .insert(cartTable)
-      .values({
-        userId: session.user.id,
-      })
-      .returning();
-    return {
-      ...newCart,
-      items: [],
-      totalPriceInCents: 0,
-      shippingAddress: null,
-    };
+    throw new Error("Cart not found");
   }
   return {
     ...cart,
-    totalPriceInCents: cart.items.reduce(
-      (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
-      0,
-    ),
+    totalPriceInCents: calculateCartTotalInCents(cart.items),
   };
 };

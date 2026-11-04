@@ -1,4 +1,4 @@
-import { desc, eq, inArray, sum } from "drizzle-orm";
+import { desc, eq, ilike, inArray, or, sum } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -7,6 +7,8 @@ import {
   productTable,
   productVariantTable,
 } from "@/db/schema";
+
+import type { ProductSortOption } from "./product-sort";
 
 const PRODUCT_LIST_LIMIT = 10;
 
@@ -54,3 +56,45 @@ export const getNewestProducts = () =>
     with: { variants: true },
     limit: PRODUCT_LIST_LIMIT,
   });
+
+type ProductWithVariants = Awaited<
+  ReturnType<typeof getNewestProducts>
+>[number];
+
+const getLowestPriceInCents = (product: ProductWithVariants) =>
+  Math.min(...product.variants.map((variant) => variant.priceInCents));
+
+export const sortProducts = (
+  products: ProductWithVariants[],
+  sort: ProductSortOption,
+) => {
+  const sortedProducts = [...products];
+  if (sort === "novidades") {
+    return sortedProducts.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+  }
+  if (sort === "menor-preco") {
+    return sortedProducts.sort(
+      (a, b) => getLowestPriceInCents(a) - getLowestPriceInCents(b),
+    );
+  }
+  if (sort === "maior-preco") {
+    return sortedProducts.sort(
+      (a, b) => getLowestPriceInCents(b) - getLowestPriceInCents(a),
+    );
+  }
+  return sortedProducts;
+};
+
+export const searchProducts = (term: string) => {
+  const pattern = `%${term.replace(/[%_\\]/g, "\\$&")}%`;
+  return db.query.productTable.findMany({
+    where: or(
+      ilike(productTable.name, pattern),
+      ilike(productTable.description, pattern),
+    ),
+    with: { variants: true },
+    limit: 48,
+  });
+};

@@ -3,13 +3,14 @@ import { redirect } from "next/navigation";
 
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { db } from "@/db";
+import { getCartWithItems } from "@/data/cart";
+import { calculateCartTotalInCents } from "@/helpers/cart";
 import { auth } from "@/lib/auth";
 
 import CartSummary from "../components/cart-summary";
 import { formatAddress } from "../helpers/address";
+import { toCartSummaryProducts } from "../helpers/cart-summary-products";
 import FinishOrderButton from "./components/finish-order-button";
 
 const ConfirmationPage = async () => {
@@ -17,33 +18,16 @@ const ConfirmationPage = async () => {
     headers: await headers(),
   });
   if (!session?.user.id) {
+    redirect("/authentication");
+  }
+  const cart = await getCartWithItems(session.user.id);
+  if (!cart || cart.items.length === 0) {
     redirect("/");
   }
-  const cart = await db.query.cartTable.findFirst({
-    where: (cart, { eq }) => eq(cart.userId, session.user.id),
-    with: {
-      shippingAddress: true,
-      items: {
-        with: {
-          productVariant: {
-            with: {
-              product: true,
-            },
-          },
-        },
-      },
-    },
-  });
-  if (!cart || cart?.items.length === 0) {
-    redirect("/");
-  }
-  const cartTotalInCents = cart.items.reduce(
-    (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
-    0,
-  );
   if (!cart.shippingAddress) {
     redirect("/cart/identification");
   }
+  const cartTotalInCents = calculateCartTotalInCents(cart.items);
   return (
     <div>
       <Header />
@@ -64,14 +48,7 @@ const ConfirmationPage = async () => {
         <CartSummary
           subtotalInCents={cartTotalInCents}
           totalInCents={cartTotalInCents}
-          products={cart.items.map((item) => ({
-            id: item.productVariant.id,
-            name: item.productVariant.product.name,
-            variantName: item.productVariant.name,
-            quantity: item.quantity,
-            priceInCents: item.productVariant.priceInCents,
-            imageUrl: item.productVariant.imageUrl,
-          }))}
+          products={toCartSummaryProducts(cart.items)}
         />
       </div>
       <div className="mt-12">

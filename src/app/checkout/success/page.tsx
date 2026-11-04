@@ -1,52 +1,66 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { Header } from "@/components/common/header";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import StatusDialog from "@/components/common/status-dialog";
+import { markOrderAsPaid } from "@/data/order";
+import { db } from "@/db";
+import { auth } from "@/lib/auth";
+import { getStripe } from "@/lib/stripe";
 
-const CheckoutSuccessPage = () => {
+import InvalidateCart from "./components/invalidate-cart";
+
+interface CheckoutSuccessPageProps {
+  searchParams: Promise<{ session_id?: string }>;
+}
+
+const getPaidOrderId = async (checkoutSessionId: string, userId: string) => {
+  try {
+    const checkoutSession =
+      await getStripe().checkout.sessions.retrieve(checkoutSessionId);
+    const orderId = checkoutSession.metadata?.orderId;
+    if (!orderId || checkoutSession.payment_status !== "paid") {
+      return null;
+    }
+    const order = await db.query.orderTable.findFirst({
+      where: (order, { and, eq }) =>
+        and(eq(order.id, orderId), eq(order.userId, userId)),
+      columns: { id: true },
+    });
+    return order?.id ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const CheckoutSuccessPage = async ({
+  searchParams,
+}: CheckoutSuccessPageProps) => {
+  const { session_id: checkoutSessionId } = await searchParams;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user) {
+    redirect("/authentication");
+  }
+  if (!checkoutSessionId) {
+    redirect("/");
+  }
+  const orderId = await getPaidOrderId(checkoutSessionId, session.user.id);
+  if (!orderId) {
+    redirect("/my-orders");
+  }
+  await markOrderAsPaid(orderId);
   return (
     <>
       <Header />
-      <Dialog open={true} onOpenChange={() => {}}>
-        <DialogContent className="text-center">
-          <Image
-            src="/illustration.svg"
-            alt="Success"
-            width={300}
-            height={300}
-            className="mx-auto"
-          />
-          <DialogTitle className="mt-4 text-2xl">Pedido efetuado!</DialogTitle>
-          <DialogDescription className="font-medium">
-            Seu pedido foi efetuado com sucesso. Você pode acompanhar o status
-            na seção de “Meus Pedidos”.
-          </DialogDescription>
-
-          <DialogFooter>
-            <Button className="rounded-full" size="lg">
-              Ver meus pedidos
-            </Button>
-            <Button
-              className="rounded-full"
-              variant="outline"
-              size="lg"
-              asChild
-            >
-              <Link href="/">Voltar para a loja</Link>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <InvalidateCart />
+      <StatusDialog
+        title="Pedido efetuado!"
+        description="Seu pedido foi efetuado com sucesso. Você pode acompanhar o status na seção de “Meus Pedidos”."
+        primaryAction={{ label: "Ver meus pedidos", href: "/my-orders" }}
+        secondaryAction={{ label: "Voltar para a loja", href: "/" }}
+      />
     </>
   );
 };

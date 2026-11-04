@@ -98,7 +98,7 @@ const ProductActions = ({ productVariantId }: ProductActionsProps) => {
       </div>
       <div className="bg-background/95 supports-[backdrop-filter]:bg-background/85 fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:flex-col md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <Button
-          className="h-12 flex-1 rounded-full text-sm font-bold md:flex-none"
+          className="h-12 min-w-0 flex-1 rounded-full px-4 text-sm font-bold md:flex-none"
           size="lg"
           variant="outline"
           disabled={isPending}
@@ -109,10 +109,11 @@ const ProductActions = ({ productVariantId }: ProductActionsProps) => {
           ) : (
             <ShoppingBagIcon />
           )}
-          Adicionar à sacola
+          <span className="sm:hidden">Sacola</span>
+          <span className="hidden sm:inline">Adicionar à sacola</span>
         </Button>
         <Button
-          className="h-12 flex-1 rounded-full text-sm font-bold md:flex-none"
+          className="h-12 min-w-0 flex-1 rounded-full px-4 text-sm font-bold md:flex-none"
           size="lg"
           disabled={isPending}
           onClick={handleBuyNow}

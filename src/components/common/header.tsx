@@ -19,7 +19,7 @@ export const Header = async () => {
     <>
       <AnnouncementBar />
       <StickyHeader>
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 border-b px-5 lg:h-20">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-5 lg:h-20">
           <Link
             href="/"
             className="shrink-0"

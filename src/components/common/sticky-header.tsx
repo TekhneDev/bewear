@@ -30,7 +30,7 @@ const StickyHeader = ({ children }: StickyHeaderProps) => {
   return (
     <header
       className={cn(
-        "bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40 backdrop-blur transition-[transform,box-shadow] duration-300",
+        "bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40 border-b backdrop-blur transition-[transform,box-shadow] duration-300",
         isHidden && "-translate-y-full",
         isScrolled && "shadow-sm",
       )}
